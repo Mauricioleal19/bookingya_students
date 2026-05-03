@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: CI — BookingYa
 
 on:
   push:
@@ -7,16 +7,28 @@ on:
     branches: [ "main", "estudiantes" ]
 
 jobs:
+
   build:
+    name: Build & Serenity Tests (TDD + BDD + ATDD)
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 17
+
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'          # ← corregido de 17 a 21
           distribution: 'temurin'
           cache: maven
-      - name: Run tests
-        run: mvn -B test --file pom.xml
+
+      - name: Ejecutar todos los tests (TDD + BDD + ATDD)
+        run: mvn -B verify -P all --file pom.xml
+
+      - name: Subir reporte Serenity
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: serenity-report
+          path: target/site/serenity/
+          retention-days: 7
