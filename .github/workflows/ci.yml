@@ -18,9 +18,18 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'          # ← corregido de 17 a 21
+          java-version: '21'
           distribution: 'temurin'
           cache: maven
+
+      - name: Compilar proyecto
+        run: mvn -B package -DskipTests --file pom.xml
+
+      - name: Levantar backend en segundo plano
+        run: |
+          java -jar target/*.jar &
+          echo "Esperando que el backend esté listo..."
+          timeout 60 bash -c 'until curl -sf http://localhost:8080/api/guest; do sleep 2; done'
 
       - name: Ejecutar todos los tests (TDD + BDD + ATDD)
         run: mvn -B verify -P all --file pom.xml
